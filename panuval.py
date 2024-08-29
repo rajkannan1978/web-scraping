@@ -6,7 +6,7 @@ from selenium import webdriver
 
 def read_data():
 
-    with open('panuval_books.json') as f:
+    with open('panuval_books.json', 'r', encoding='utf8') as f:
         all_books_list = json.load(f)
     return all_books_list
 
@@ -14,7 +14,7 @@ def read_data():
 def write_data(all_books_list):
     json_object = json.dumps(all_books_list)
 
-    with open("panuval_books.json", "w") as outfile:
+    with open("panuval_books.json", "w", encoding='utf8') as outfile:
         outfile.write(json_object)
 
 
