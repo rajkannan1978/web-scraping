@@ -84,33 +84,46 @@ def scrape_panuval_books_list():
     page = requests.get(url)
     soup = Bs(page.content, 'lxml')
     books_tag = soup.find_all('div', class_='product-thumb')
-    books_info = dict()
-    books_info['Books'] = dict()
+    
+    books_list = dict()
     for book_obj in books_tag:
         url, info = get_book_info(book_obj)
-        books_info['Books'][url] = info
-    write_data(books_info)
-    return books_info
+        if url not in books_list:
+            books_list[url] = {}
+            books_list[url]['title'] = info[0]
+            books_list[url]['link'] = url
+            books_list[url]['image'] = info[1]
+            books_list[url]['price'] = info[2:]
+
+    return books_list
 
 
 if __name__ == '__main__':
     books_list = scrape_panuval_books_list()
-    # books_list = read_data()
-    for book, short_info in books_list['Books'].items():
-        print(book, short_info)
 
-    print('Total Books are', len(books_list['Books'].items()))
+    for id in books_list.keys():
+        print(books_list[id]['title'])
+        print(books_list[id]['link'])
+
+    print('Total Books are', len(books_list))
 
     driver = webdriver.Chrome()
-    books_list['Details'] = {}
+    books_details = {}
     unknown_books = []
-    for book in books_list['Books'].keys():
+    book_id = 1
+    for book in books_list.keys():
         print(f'Scraping {book}...')
-        books_list['Details'][book] = get_book_details(book)
-        if books_list['Details'][book] == {}:
-            unknown_books.append(book)
-    write_data(books_list)
-    print(unknown_books)
-    for book in unknown_books:
-        books_list['Details'][book] = get_book_details(book)
+        details = books_list[book]
+        details.update(get_book_details(book))
+        books_details[str(book_id)] = details
+        if details == {}:
+            unknown_books.append([book_id,book])
+        book_id += 1
+    if unknown_books:
+        print(unknown_books)
+    # for book_id, book in unknown_books:
+    #     details = get_book_details(book)
+    #     books_details[str(book_id)] = details
+
+    write_data(books_details)
     driver.quit()
